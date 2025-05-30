@@ -6,25 +6,30 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
+@ApiBearerAuth()
+@ApiTags('User')
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
   @UseGuards(AuthGuard)
+  @ApiQuery({ name: 'page', nullable: true })
+  @ApiQuery({ name: 'itemsPerPage', nullable: true })
+  @ApiQuery({ name: 'search', nullable: true })
   @Get()
-  async findAll(): Promise<{ data: User[] }> {
-    const data = await this.userService.findAll();
-    return {
-      data,
-    };
+  findAll(@Query() query: FilterUserDto): Promise<{ data: User[] }> {
+    return this.userService.findAll(query);
   }
 
   @UseGuards(AuthGuard)
